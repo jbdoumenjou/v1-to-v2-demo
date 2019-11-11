@@ -1,0 +1,41 @@
+version: '3.5'
+services:
+# Simple example of traefik v1 and v2 simple configuration
+# Use constraints to route to a specific app
+
+## v1
+  traefik:
+    image: traefik:1.7
+    command:
+      - --loglevel=DEBUG
+      - --docker
+      - --constraints=tag==v1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - '80:80'
+
+  api-v1:
+    image: containous/whoami
+    labels:
+      - traefik.frontend.rule=Host:whoami
+      - traefik.tags=v1
+
+## v2
+  traefik2:
+    image: traefik:2.0
+    command:
+      - --log.level=DEBUG
+      - --providers.docker
+      - --providers.docker.constraints=Label(`traefik.version`, `2`)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - '8000:80'
+
+  api-v2:
+    image: containous/whoami
+    labels:
+      - traefik.version=2
+      - traefik.http.routers.r0.rule=Host(`whoami`)
+
